@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Kuber – Income &amp; Expense Tracker</title>
+<style>
+:root{color-scheme:light;--gold:#C9962B;--gold2:#E8B84A;--ink:#222;--mut:#777;--line:#eee;--g:#1a8a4a;--r:#c0392b}
+*{box-sizing:border-box}
+body{margin:0 auto;background:#fff;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;max-width:640px;padding:12px 14px 40px}
+header{display:flex;align-items:center;gap:10px;padding:6px 0 12px}
+header h1{margin:0;font-size:26px;color:var(--gold);letter-spacing:1px}
+header small{color:var(--mut);display:block;font-size:12px}
+.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0}
+.card{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+.card span{font-size:11px;color:var(--mut);display:block}
+.card b{font-size:15px;word-break:break-word}
+.inc{color:var(--g)}.exp{color:var(--r)}
+nav{display:flex;gap:4px;margin:14px 0;border-bottom:2px solid var(--line)}
+nav button{flex:1;padding:10px 2px;border:0;background:none;font-size:14px;color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-2px}
+nav button.on{color:var(--gold);border-color:var(--gold);font-weight:600}
+form{display:grid;gap:8px;border:1px solid var(--line);border-radius:12px;padding:12px}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:var(--ink)}
+.seg{display:flex;gap:6px}
+.seg label{flex:1;text-align:center;padding:10px;border:1px solid #ddd;border-radius:8px}
+.seg input{display:none}
+.seg input:checked+span{font-weight:700}
+.seg label:has(input:checked){background:#fdf6e3;border-color:var(--gold)}
+.primary{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#fff;border:0;padding:12px;border-radius:10px;font-weight:700}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row small{color:var(--mut);display:block}
+.row button{border:0;background:none;color:var(--mut);font-size:18px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--gold);font-size:12px}
+tfoot td{font-weight:700;border-top:2px solid var(--gold)}
+h3{margin:14px 0 6px;font-size:15px}
+.hide{display:none}
+.note{font-size:12px;color:var(--mut);margin:8px 0}
+textarea{height:110px;font-size:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+</style>
+</head>
+<body>
+<header>
+<svg width="52" height="52" viewBox="0 0 64 64" aria-label="Kuber logo">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6D77A"/><stop offset="1" stop-color="#B8841F"/></linearGradient></defs>
+<ellipse cx="32" cy="50" rx="22" ry="7" fill="url(#g)"/><ellipse cx="32" cy="45" rx="22" ry="7" fill="#F6D77A" stroke="#B8841F"/>
+<ellipse cx="32" cy="38" rx="22" ry="7" fill="url(#g)"/><ellipse cx="32" cy="33" rx="22" ry="7" fill="#F6D77A" stroke="#B8841F"/>
+<circle cx="32" cy="16" r="13" fill="url(#g)" stroke="#B8841F" stroke-width="1.5"/><circle cx="32" cy="16" r="9" fill="none" stroke="#fff" stroke-opacity=".7"/>
+<text x="32" y="21" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" font-family="Georgia,serif">₹</text>
+</svg>
+<div><h1>Kuber</h1><small>Your private income &amp; expense book</small></div>
+</header>
+
+<div class="cards">
+<div class="card"><span>Total income</span><b class="inc" id="tI"></b></div>
+<div class="card"><span>Total expenses</span><b class="exp" id="tE"></b></div>
+<div class="card"><span>Balance</span><b id="tB"></b></div>
+</div>
+
+<nav id="nav">
+<button data-v="add" class="on">Add / List</button><button data-v="month">Monthly</button><button data-v="year">Yearly</button><button data-v="bk">Backup</button>
+</nav>
+
+<section id="v-add">
+<form id="f">
+<div class="seg">
+<label><input type="radio" name="type" value="income" checked><span>＋ Income</span></label>
+<label><input type="radio" name="type" value="expense"><span>－ Expense</span></label>
+</div>
+<input id="name" placeholder="Name (e.g. Maths tuition – Rahul)" required maxlength="80">
+<div class="two"><input id="amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Amount ₹" required><input id="date" type="date" required></div>
+<button class="primary" type="submit">Save entry</button>
+</form>
+<h3>Entries for month</h3>
+<input type="month" id="fm">
+<div class="cards" style="margin-top:10px">
+<div class="card"><span>Month income</span><b class="inc" id="mI"></b></div>
+<div class="card"><span>Month expenses</span><b class="exp" id="mE"></b></div>
+<div class="card"><span>Month balance</span><b id="mB"></b></div>
+</div>
+<div id="list"></div>
+</section>
+
+<section id="v-month" class="hide">
+<h3>All months</h3>
+<div class="scroll"><table><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Balance</th></tr></thead><tbody id="mt"></tbody></table></div>
+</section>
+
+<section id="v-year" class="hide">
+<select id="ys"></select>
+<h3>Month by month</h3>
+<div class="scroll"><table><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Balance</th></tr></thead><tbody id="yt"></tbody><tfoot id="yf"></tfoot></table></div>
+</section>
+
+<section id="v-bk" class="hide">
+<p class="note">Your data is saved only on this phone/browser. No bank, no online payment link, no account, no cost. Take a backup regularly: copy the text below and keep it in a safe note.</p>
+<button class="primary" id="exp" style="width:100%">Show backup text</button>
+<textarea id="bk" placeholder="Backup text appears here. To restore, paste a backup here and tap Restore."></textarea>
+<button id="imp" class="primary" style="width:100%;margin-top:8px;background:#444">Restore from pasted text</button>
+<p class="note" id="msg"></p>
+</section>
+
+<script>
+const KEY='kuber_entries_v1';
+let data=[];
+try{data=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){data=[]}
+const $=id=>document.getElementById(id);
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}};
+const fmt=n=>'₹'+(+n).toLocaleString('en-IN',{maximumFractionDigits:2});
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const sum=(a,t)=>a.filter(x=>x.type===t).reduce((s,x)=>s+x.amount,0);
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today=new Date().toISOString().slice(0,10);
+$('date').value=today;$('fm').value=today.slice(0,7);
+
+function bal(el,v){el.textContent=fmt(v);el.className=v>=0?'inc':'exp'}
+function render(){
+ $('tI').textContent=fmt(sum(data,'income'));$('tE').textContent=fmt(sum(data,'expense'));
+ bal($('tB'),sum(data,'income')-sum(data,'expense'));
+ const m=data.filter(x=>x.date.startsWith($('fm').value));
+ $('mI').textContent=fmt(sum(m,'income'));$('mE').textContent=fmt(sum(m,'expense'));
+ bal($('mB'),sum(m,'income')-sum(m,'expense'));
+ $('list').innerHTML=m.sort((a,b)=>b.date.localeCompare(a.date)).map(x=>
+  `<div class="row"><div><b>${esc(x.name)}</b><small>${x.date.split('-').reverse().join('-')} · ${x.type}</small></div><div class="${x.type==='income'?'inc':'exp'}"><b>${x.type==='income'?'+':'−'}${fmt(x.amount)}</b> <button data-d="${x.id}" aria-label="Delete">🗑</button></div></div>`).join('')||'<p class="note">No entries this month.</p>';
+ const ms={};data.forEach(x=>{const k=x.date.slice(0,7);(ms[k]=ms[k]||[]).push(x)});
+ $('mt').innerHTML=Object.keys(ms).sort().reverse().map(k=>{const i=sum(ms[k],'income'),e=sum(ms[k],'expense');const[y,mo]=k.split('-');
+  return `<tr><td>${MN[mo-1]} ${y}</td><td class="inc">${fmt(i)}</td><td class="exp">${fmt(e)}</td><td>${fmt(i-e)}</td></tr>`}).join('')||'<tr><td colspan="4">No data yet</td></tr>';
+ const ys=[...new Set(data.map(x=>x.date.slice(0,4)).concat(today.slice(0,4)))].sort().reverse();
+ const cur=$('ys').value||ys[0];
+ $('ys').innerHTML=ys.map(y=>`<option ${y===cur?'selected':''}>${y}</option>`).join('');
+ const yd=data.filter(x=>x.date.startsWith($('ys').value));
+ $('yt').innerHTML=MN.map((n,i)=>{const p=$('ys').value+'-'+String(i+1).padStart(2,'0');const d=yd.filter(x=>x.date.startsWith(p));const a=sum(d,'income'),b=sum(d,'expense');
+  return `<tr><td>${n}</td><td class="inc">${fmt(a)}</td><td class="exp">${fmt(b)}</td><td>${fmt(a-b)}</td></tr>`}).join('');
+ const yi=sum(yd,'income'),ye=sum(yd,'expense');
+ $('yf').innerHTML=`<tr><td>Year total</td><td class="inc">${fmt(yi)}</td><td class="exp">${fmt(ye)}</td><td>${fmt(yi-ye)}</td></tr>`;
+}
+$('f').addEventListener('submit',e=>{e.preventDefault();
+ data.push({id:Date.now()+Math.random().toString(36).slice(2,6),type:document.querySelector('input[name=type]:checked').value,name:$('name').value.trim(),amount:parseFloat($('amt').value),date:$('date').value});
+ save();$('fm').value=$('date').value.slice(0,7);$('name').value='';$('amt').value='';render();});
+$('list').addEventListener('click',e=>{const id=e.target.dataset.d;if(id&&confirm('Delete this entry?')){data=data.filter(x=>x.id!==id);save();render()}});
+$('fm').addEventListener('change',render);$('ys').addEventListener('change',render);
+$('nav').addEventListener('click',e=>{const v=e.target.dataset.v;if(!v)return;
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b===e.target));
+ ['add','month','year','bk'].forEach(s=>$('v-'+s).classList.toggle('hide',s!==v));});
+$('exp').onclick=()=>{$('bk').value=JSON.stringify(data);$('bk').select();try{navigator.clipboard.writeText($('bk').value);$('msg').textContent='Backup shown (and copied if allowed). Save it in a safe place.'}catch(e){$('msg').textContent='Select all text above and copy it.'}};
+$('imp').onclick=()=>{try{const d=JSON.parse($('bk').value);if(!Array.isArray(d))throw 0;if(!confirm('Replace current data with this backup?'))return;data=d;save();render();$('msg').textContent='Restored '+d.length+' entries.'}catch(e){$('msg').textContent='That text is not a valid backup.'}};
+render();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+  </html>
